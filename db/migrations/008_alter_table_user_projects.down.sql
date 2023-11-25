@@ -1,0 +1,2 @@
+ALTER TABLE "user_projects"
+DROP CONSTRAINT IF EXISTS "c3";

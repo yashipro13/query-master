@@ -1,0 +1,2 @@
+ALTER TABLE "project_hashtags"
+DROP CONSTRAINT IF EXISTS "c1";

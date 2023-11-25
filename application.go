@@ -14,6 +14,7 @@ var rootCmd = &cobra.Command{
 func main() {
 	setDefaultCommandIfNonePresent()
 	rootCmd.AddCommand(command.Server())
+	rootCmd.AddCommand(command.Migration())
 	rootCmd.Execute()
 }
 

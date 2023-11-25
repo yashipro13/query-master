@@ -1,7 +1,7 @@
 version: '0.1'
 services:
   app:
-    container_name: querymaster_app
+    container_name: queryMaster_app
     build: .
     ports:
       - 8080:8080
