@@ -33,14 +33,18 @@ func (r *Repo) GetProjectsByUser(ctx context.Context, userID int) ([]models.Proj
 			Err:     err,
 		}
 	}
+	userName := r.findUserNameByID(ctx, userID)
 	var domainProjects []models.Project
 	for _, project := range projects {
+		hashtags, _ := r.findHastagsIDsByProjectID(ctx, project.id)
 		domainProjects = append(domainProjects, models.Project{
 			ID:          project.id,
 			Name:        project.name,
 			Slug:        project.slug,
 			Description: project.description,
 			CreatedAt:   project.createdAt,
+			Hashtags:    hashtags,
+			CreatedBy:   userName,
 		})
 	}
 	return domainProjects, nil
@@ -89,4 +93,42 @@ func (r *Repo) findProjectsByProjectID(ctx context.Context, projectID []int) ([]
 		})
 	}
 	return projects, nil
+}
+
+func (r *Repo) findHastagsIDsByProjectID(ctx context.Context, projectID int) ([]string, error) {
+	rows, err := r.db.Query(ctx, "SELECT hashtag_id FROM project_hashtags WHERE project_id = $1", projectID)
+	if err != nil {
+		return []string{}, err
+	}
+	var hashtagIDs []int
+	for rows.Next() {
+		var hashtagID int
+		err = rows.Scan(&hashtagID)
+		if err != nil {
+			break
+		}
+		hashtagIDs = append(hashtagIDs, hashtagID)
+	}
+	var hashtags []string
+	rows, err = r.db.Query(ctx, "SELECT name FROM hashtags WHERE id = ANY($1)", pq.Array(hashtagIDs))
+	if err != nil {
+		return []string{}, err
+	}
+	for rows.Next() {
+		var hashtag string
+		err = rows.Scan(&hashtag)
+		if err != nil {
+			break
+		}
+		hashtags = append(hashtags, hashtag)
+	}
+	return hashtags, nil
+}
+
+func (r *Repo) findUserNameByID(ctx context.Context, userID int) string {
+	var name string
+	row, _ := r.db.Query(ctx, "SELECT name FROM users WHERE id = $1", userID)
+	row.Next()
+	_ = row.Scan(&name)
+	return name
 }
