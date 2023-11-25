@@ -1,15 +1,50 @@
+version: '0.1'
 services:
-  db:
-    image: postgres
+  app:
+    container_name: querymaster_app
+    build: .
+    ports:
+      - 8080:8080
+    restart: on-failure
     environment:
-      POSTGRES_DB: dev
-      POSTGRES_USER: postgres-dev
-      POSTGRES_PASSWORD: s3cr3tp4ssw0rd
+      - DATABASE_HOST=postgresdb
+      - DATABASE_USERNAME=username
+      - DATABASE_PASSWORD=password
+      - DATABASE_NAME=querymaster
+      - PORT=8080
+      - GIN_MODE=release
+    depends_on:
+      - postgresdb
+    networks:
+      - querymaster
+
+  postgresdb:
+    image: postgres:latest
+    container_name: querymaster_postgres
+    environment:
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=querymaster
+      - POSTGRES_HOST=postgresdb
     ports:
       - 5432:5432
+    networks:
+      - querymaster
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0
     environment:
       - discovery.type=single-node
     ports:
       - 9200:9200
+    networks:
+      - querymaster
+
+networks:
+  querymaster:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -1,23 +1,36 @@
 package config
 
-type config struct {
+import (
+	"os"
+	"strconv"
+)
+
+type Config struct {
 	database Database
 	elastic  Elastic
+	appPort  int
 }
 
-var cfg config
-
-func Load() {
-	cfg = config{
+func NewConfig() *Config {
+	port, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil {
+		port = 8080
+	}
+	return &Config{
 		database: getDatabaseConfig(),
 		elastic:  getElasticConfig(),
+		appPort:  port,
 	}
 }
 
-func DatabaseConfigs() Database {
-	return cfg.database
+func (c *Config) DatabaseConfigs() Database {
+	return c.database
 }
 
-func ElasticConfigs() Elastic {
-	return cfg.elastic
+func (c *Config) ElasticConfigs() Elastic {
+	return c.elastic
+}
+
+func (c *Config) AppPort() int {
+	return c.appPort
 }
