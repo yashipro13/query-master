@@ -5,8 +5,10 @@ go 1.20
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-migrate/migrate v3.5.4+incompatible
+	github.com/golang/mock v1.6.0
 	github.com/lib/pq v1.10.9
 	github.com/spf13/cobra v1.8.0
+	github.com/stretchr/testify v1.8.4
 )
 
 require (
