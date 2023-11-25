@@ -3,13 +3,14 @@ package repository
 import (
 	"context"
 	"fmt"
+	"github.com/lib/pq"
 	"github.com/yashipro13/queryMaster/models"
 	"time"
 )
 
 func (r *Repo) GetProjectsByUser(ctx context.Context, userID int) ([]models.Project, *models.Error) {
 	projectIDs, err := r.findProjectIDsForUser(ctx, userID)
-	if err.Error() == "no rows found" {
+	if err != nil && err.Error() == "no rows found" {
 		return []models.Project{}, &models.Error{
 			Code:    422,
 			Message: "no project ids found for selected user",
@@ -66,7 +67,7 @@ func (r *Repo) findProjectIDsForUser(ctx context.Context, userID int) ([]int, er
 }
 
 func (r *Repo) findProjectsByProjectID(ctx context.Context, projectID []int) ([]project, error) {
-	rows, err := r.db.Query(ctx, "select id, name, slug, description, created_at from projects where project_id in $1", projectID)
+	rows, err := r.db.Query(ctx, "SELECT id, name, slug, description, created_at FROM projects WHERE id = ANY($1)", pq.Array(projectID))
 	if err != nil {
 		return []project{}, err
 	}
