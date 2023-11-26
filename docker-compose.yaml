@@ -11,10 +11,12 @@ services:
       - DATABASE_USERNAME=username
       - DATABASE_PASSWORD=password
       - DATABASE_NAME=querymaster
+      - ELASTIC_HOST=http://elasticsearch:9200
       - PORT=8080
       - GIN_MODE=release
     depends_on:
       - postgresdb
+      - elasticsearch
     networks:
       - querymaster
 
@@ -37,6 +39,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0
     environment:
       - discovery.type=single-node
+      - xpack.security.enabled=false
     ports:
       - 9200:9200
     networks:
