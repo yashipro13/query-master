@@ -33,9 +33,9 @@ func (r *Repo) GetProjectsByUser(ctx context.Context, userID int) ([]models.Proj
 			Err:     err,
 		}
 	}
-	userName := r.findUserNameByID(ctx, userID)
 	var domainProjects []models.Project
 	for _, project := range projects {
+		userName, _ := r.findUserNamesByProjectID(ctx, project.id)
 		hashtags, _ := r.findHastagsIDsByProjectID(ctx, project.id)
 		domainProjects = append(domainProjects, models.Project{
 			ID:          project.id,
@@ -123,12 +123,4 @@ func (r *Repo) findHastagsIDsByProjectID(ctx context.Context, projectID int) ([]
 		hashtags = append(hashtags, hashtag)
 	}
 	return hashtags, nil
-}
-
-func (r *Repo) findUserNameByID(ctx context.Context, userID int) string {
-	var name string
-	row, _ := r.db.Query(ctx, "SELECT name FROM users WHERE id = $1", userID)
-	row.Next()
-	_ = row.Scan(&name)
-	return name
 }

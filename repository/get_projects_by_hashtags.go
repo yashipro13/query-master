@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/lib/pq"
 	"github.com/yashipro13/queryMaster/models"
+	"log"
 )
 
 func (r *Repo) GetProjectByHashtags(ctx context.Context, hashtags []string) ([]models.Project, *models.Error) {
@@ -35,13 +36,15 @@ func (r *Repo) GetProjectByHashtags(ctx context.Context, hashtags []string) ([]m
 	var domainProjects []models.Project
 	for _, project := range projects {
 		user, _ := r.findUserNamesByProjectID(ctx, project.id)
+		log.Printf("name for project id %d is %v", project.id, user)
+		projectHashtags, _ := r.findHastagsIDsByProjectID(ctx, project.id)
 		domainProjects = append(domainProjects, models.Project{
 			ID:          project.id,
 			Name:        project.name,
 			Slug:        project.slug,
 			Description: project.description,
 			CreatedAt:   project.createdAt,
-			Hashtags:    hashtags,
+			Hashtags:    projectHashtags,
 			CreatedBy:   user,
 		})
 	}
@@ -83,14 +86,21 @@ func (r *Repo) findProjectIDsByHashtagsIDs(ctx context.Context, hashtagIDs []int
 	return projectIDs, nil
 }
 
-func (r *Repo) findUserNamesByProjectID(ctx context.Context, projectID int) (string, error) {
-	rows, err := r.db.Query(ctx, "SELECT user_id FROM user_hashtags WHERE project_id = $1", projectID)
+func (r *Repo) findUserNamesByProjectID(ctx context.Context, projectID int) ([]string, error) {
+	row, err := r.db.Query(ctx, "SELECT name FROM users WHERE id = ANY(select user_id from user_projects where project_id = $1)", projectID)
 	if err != nil {
-		return "", err
+		log.Printf("failed to find user id for project %d with err %s", projectID, err.Error())
+		return []string{}, err
 	}
-	var id int
-	rows.Next()
-	rows.Scan(&id)
-	return r.findUserNameByID(ctx, id), nil
-
+	var names []string
+	for row.Next() {
+		var name string
+		err = row.Scan(&name)
+		if err != nil {
+			log.Printf("failed to find id with err %s", err.Error())
+		}
+		log.Printf("appended to names %s", name)
+		names = append(names, name)
+	}
+	return names, nil
 }

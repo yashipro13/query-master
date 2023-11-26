@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yashipro13/queryMaster/config"
+	"github.com/yashipro13/queryMaster/hashtags"
 	"github.com/yashipro13/queryMaster/repository"
 	"github.com/yashipro13/queryMaster/users"
 	"log"
@@ -27,7 +28,7 @@ func New() (*server, error) {
 		log.Printf("failed to initialize repository")
 		return nil, err
 	}
-	router := NewRouter(users.Service{DBManager: db})
+	router := NewRouter(users.Service{DBManager: db}, hashtags.Service{DBManager: db})
 	server := &server{
 		router: router,
 		config: cfg,

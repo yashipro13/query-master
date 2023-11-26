@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func GetProjectByUserIDHandler(svc users.Service) gin.HandlerFunc {
@@ -17,7 +18,9 @@ func GetProjectByUserIDHandler(svc users.Service) gin.HandlerFunc {
 			c.JSON(400, gin.H{"success": false, "error": "user id cannot be empty"})
 		}
 		ctx := context.WithValue(context.Background(), "userID", userID)
-		svcRes := svc.Run(ctx, int(userID))
+		deadlineCtx, cancel := context.WithDeadline(ctx, time.Now().Add(1*time.Second))
+		defer cancel()
+		svcRes := svc.Run(deadlineCtx, int(userID))
 		if svcRes.Error != nil {
 			log.Printf("%s", svcRes.Error.Message)
 			c.JSON(svcRes.Error.Code, gin.H{"status": false, "message": svcRes.Error.Message})
