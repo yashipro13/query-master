@@ -39,7 +39,7 @@ func New() (*server, error) {
 		log.Printf("failed to initialize es client with err %s", err.Error())
 		return nil, err
 	}
-	router := NewRouter(users.Service{DBManager: db}, hashtags.Service{DBManager: db}, elasticsearch.Service{ElasticClient: es})
+	router := NewRouter(users.Service{DBManager: db}, hashtags.Service{DBManager: db}, elasticsearch.Service{ElasticClient: es}, db)
 	server := &server{
 		router:   router,
 		config:   cfg,
