@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/yashipro13/queryMaster/elasticsearch"
 	"github.com/yashipro13/queryMaster/handlers"
 	"github.com/yashipro13/queryMaster/hashtags"
 	"github.com/yashipro13/queryMaster/users"
@@ -9,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(userService users.Service, hashtagService hashtags.Service) *gin.Engine {
+func NewRouter(userService users.Service, hashtagService hashtags.Service, esService elasticsearch.Service) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/ping", func(ctx *gin.Context) {
@@ -18,6 +19,8 @@ func NewRouter(userService users.Service, hashtagService hashtags.Service) *gin.
 
 	r.GET("/get_project_by_user", handlers.GetProjectByUserIDHandler(userService))
 	r.GET("/get_project_by_hashtags", handlers.GetProjectByHashtagsHandler(hashtagService))
+
+	r.GET("/get_project_by_search", handlers.FuzzySearchHandler(esService))
 
 	return r
 }

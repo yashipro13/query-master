@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yashipro13/queryMaster/config"
+	"github.com/yashipro13/queryMaster/elasticsearch"
 	"github.com/yashipro13/queryMaster/hashtags"
 	"github.com/yashipro13/queryMaster/ingestor"
 	"github.com/yashipro13/queryMaster/repository"
@@ -38,7 +39,7 @@ func New() (*server, error) {
 		log.Printf("failed to initialize es client with err %s", err.Error())
 		return nil, err
 	}
-	router := NewRouter(users.Service{DBManager: db}, hashtags.Service{DBManager: db})
+	router := NewRouter(users.Service{DBManager: db}, hashtags.Service{DBManager: db}, elasticsearch.Service{ElasticClient: es})
 	server := &server{
 		router:   router,
 		config:   cfg,
@@ -81,6 +82,6 @@ func (s server) syncData(ctx context.Context) {
 		if svcErr != nil {
 			log.Printf("failed ingestion of data with error %s", svcErr.Message)
 		}
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second * 60)
 	}
 }
